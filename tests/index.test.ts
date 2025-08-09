@@ -58,76 +58,14 @@ This is a test with an embedded image.
   it("should handle code blocks correctly", async () => {
     console.log("Starting code block test");
 
-    const markdown = `
-# Code Block Test
-This is a test with various code blocks.
+    const sampleMdPath = path.join(__dirname, "..", "sample.md");
+    const outputDir = path.join(__dirname, "..", "test-output");
 
-## Inline Code
-This is an example of \`inline code\` in a paragraph.
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
 
-## Multi-line Code Block
-\`\`\`typescript
-function hello(name: string): string {
-  return \`Hello, \${name}!\`;
-}
-
-const result = hello("World");
-console.log(result);
-\`\`\`
-
-## Code Block with Language
-\`\`\`javascript
-const numbers = [1, 2, 3, 4, 5];
-const doubled = numbers.map(n => n * 2);
-console.log(doubled);
-\`\`\`
-
-## Code Block with Multiple Lines
-\`\`\`python
-def calculate_fibonacci(n: int) -> list[int]:
-    if n <= 0:
-        return []
-    elif n == 1:
-        return [0]
-    
-    fib = [0, 1]
-    for i in range(2, n):
-        fib.append(fib[i-1] + fib[i-2])
-    return fib
-\`\`\`
-`;
-
-    const options: Options = {
-      documentType: "document" as const,
-      style: {
-        titleSize: 32,
-        headingSpacing: 240,
-        paragraphSpacing: 240,
-        lineSpacing: 1.15,
-        heading1Alignment: "CENTER",
-        heading2Alignment: "LEFT",
-        codeBlockSize: 20,
-      },
-    };
-
-    console.log("Converting markdown to docx");
-    const buffer = await convertMarkdownToDocx(markdown, options);
-    console.log("Conversion complete, buffer size:", await buffer.size);
-
-    // Save the file for manual inspection
-    const outputPath = path.join(outputDir, "code-block-test.docx");
-    console.log("Saving file to:", outputPath);
-
-    const arrayBuffer = await buffer.arrayBuffer();
-    fs.writeFileSync(outputPath, Buffer.from(arrayBuffer));
-    console.log("File saved successfully");
-
-    // Verify the buffer is not empty
-    const size = await buffer.size;
-    expect(size).toBeGreaterThan(0);
-  });
-
-  it("should convert full markdown to docx with various alignments", async () => {
     const markdown = `
 # Test Document
 ## Subtitle
@@ -178,6 +116,36 @@ COMMENT: This is a comment
     const size = await buffer.size;
     expect(size).toBeGreaterThan(0);
   });
+
+describe("Markdown file to Word doc conversion", () => {
+  it("should convert sample.md to a Word document", async () => {
+    const sampleMdPath = path.join(__dirname, "..", "sample.md");
+    const outputDir = path.join(__dirname, "..", "test-output");
+
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir);
+    }
+
+    // Read markdown file
+    const markdown = fs.readFileSync(sampleMdPath, "utf-8");
+
+    // Convert to docx
+    const docxBlob = await convertMarkdownToDocx(markdown);
+
+    // Save output for inspection
+    const outputPath = path.join(outputDir, "sample-md-test.docx");
+    const buffer = await docxBlob.arrayBuffer();
+    fs.writeFileSync(outputPath, Buffer.from(buffer));
+
+    // Assertions
+    expect(docxBlob).toBeInstanceOf(Blob);
+    expect(docxBlob.size).toBeGreaterThan(0);
+    expect(docxBlob.type).toBe(
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+  });
+});
 
   it("should handle TOC and Page Break markers", async () => {
     const markdown = `
